@@ -9,7 +9,26 @@ var canvasAlto = window.innerHeight-window.innerHeight/14;
 ctx.canvas.width  = canvasAncho;
 ctx.canvas.height = canvasAlto;
 
-const FPS = 140; //140
+let FPS = ""; //140
+
+// Variables contador FPS
+let fpsTimes = [];
+
+if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+}
+
+function calcFPS(currentTime){
+    fpsTimes.push(currentTime);
+    const t0 = fpsTimes[0];
+    const delta = currentTime - t0;
+
+    if (delta >= 1000) {
+        fpsTimes.shift()
+        FPS = fpsTimes.length - 1
+    }
+}
+
 var moverBarra1Arriba = false, moverBarra1Abajo = false, moverBarra2Arriba = false, moverBarra2Abajo = false;
 var distanciaBarras = 40, velocidadBarras = 8;
 var largoBarrasDefault = canvasAlto/5;
@@ -17,6 +36,13 @@ var puntajeBarra1 = 0, puntajeBarra2 = 0, meta = 5;
 var nombreJugador1 = "Jugador 1", nombreJugador2 = "Jugador 2";
 var update, empezoJuego = false;
 var touchX = [], touchY = [], mostrarGuia = false;
+
+var contadorFPS = {
+    color: "rgba(255,255,255,.2)",
+    x: 100,
+    y: 100,
+    tamaño: "1.5em"
+}
 
 var barra1 = {
     x: distanciaBarras,
@@ -77,7 +103,7 @@ if(window.innerWidth > 1200 && window.innerHeight > 500){
     barra2.velocidad = velocidadBarras/2;
     barra1.ancho = barra1.ancho/2;
     barra2.ancho = barra2.ancho/2;
-    
+
 }
 
 canvas.addEventListener("mousedown", clicPantalla);
@@ -117,7 +143,7 @@ window.ontouchstart = (event) => {
     for(let i = 0; i < 4; i++){
         touchX[i] = event.touches[i].clientX;
         touchY[i] = event.touches[i].clientY;
-        
+
         if(empezoJuego){
             if(touchX[i] < canvasAncho/2){
                 if(touchY[i] < canvasAlto/2){
@@ -200,9 +226,9 @@ function inicio(){
     }
 }
 
-function bucle(){
-
+function bucle(time){
     empezoJuego = true;
+    calcFPS(time);
     actualizarPantalla();
 
     for(let i=1 ; i<=pelota.velocidad; i++){
@@ -214,7 +240,7 @@ function bucle(){
                 pelota.x += 1;
                 break;
         }
-    
+
         switch (pelota.direccion.y) {
             case "arriba":
                 pelota.y -= 1;
@@ -265,7 +291,7 @@ function bucle(){
     if((pelota.x + pelota.radio/2 >= barra2.x - barra2.ancho && pelota.x + pelota.radio/2 < barra2.x - barra2.ancho/2)
         && ((pelota.y - pelota.radio/2 > barra2.y - barra2.largo/2 && pelota.y - pelota.radio/2 < barra2.y + barra2.largo/2)
         || (pelota.y + pelota.radio/2 > barra2.y - barra2.largo/2 && pelota.y - pelota.radio/2 < barra2.y + barra2.largo/2))){
-        
+
         pelota.direccion.x = "izquierda";
         // Cambia la direccion de Y de la pelota si rebota arriba o abajo de la barra 1
         // if(pelota.y < barra2.y){
@@ -278,7 +304,7 @@ function bucle(){
         pelota.x = barra1.x + barra1.ancho + pelota.radio/2;
         pelota.y = barra1.y;
         puntajeBarra1++;
-    
+
     } else if(pelota.x + pelota.radio/2 >= canvasAncho){
         pelota.x = barra1.x + barra1.ancho + pelota.radio/2;
         pelota.y = barra1.y;
@@ -288,7 +314,7 @@ function bucle(){
     if((pelota.x - pelota.radio/2 <= barra1.x + barra1.ancho && pelota.x - pelota.radio/2 > barra1.x + barra1.ancho/2)
         && ((pelota.y - pelota.radio/2 > barra1.y - barra1.largo/2 && pelota.y - pelota.radio/2 < barra1.y + barra1.largo/2)
         || (pelota.y + pelota.radio/2 > barra1.y - barra1.largo/2 && pelota.y - pelota.radio/2 < barra1.y + barra1.largo/2))){
-        
+
         pelota.direccion.x = "derecha";
         // Cambia la direccion de Y de la pelota si rebota arriba o abajo de la barra 1
         // if(pelota.y < barra1.y){
@@ -306,12 +332,13 @@ function bucle(){
         detenerJuego(nombreJugador1);
     } else if(puntajeBarra2 == meta){
         detenerJuego(nombreJugador2);
+    } else {
+        update = window.requestAnimationFrame(bucle)
     }
-    
 }
 
 function detenerJuego(ganador){
-    clearInterval(update);
+    window.cancelAnimationFrame(update);
     empezoJuego = false;
     limpiarPantalla();
     // Puntaje
@@ -334,11 +361,11 @@ function detenerJuego(ganador){
 }
 
 function empezar(){
-    update = setInterval(bucle, 1000/FPS);
+    update = window.requestAnimationFrame(bucle)
 }
 
 function reset(){
-    
+
 }
 
 function limpiarPantalla(){
@@ -360,6 +387,13 @@ function actualizarPantalla(){
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.fillText(puntajeBarra1+" - "+puntajeBarra2, canvasAncho/2, canvasAlto/7);
+
+    // Contador FPS
+    ctx.font = contadorFPS.tamaño+" ArcadeClassic";
+    ctx.fillStyle = contadorFPS.color;
+    ctx.textAlign = "center";
+    ctx.fillText(FPS, contadorFPS.x, contadorFPS.y);
+
     // Barra 1
     ctx.fillStyle = barra1.color;
     ctx.fillRect(barra1.x, barra1.y - barra1.largo/2, barra1.ancho, barra1.largo);
