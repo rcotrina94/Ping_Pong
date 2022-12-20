@@ -18,19 +18,6 @@ if (!window.requestAnimationFrame) {
     window.requestAnimationFrame = window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
 }
 
-function calcFPS(currentTime) {
-    if (fpsTimes.length) {
-        const t0 = fpsTimes[0];
-        const delta = currentTime - t0;
-
-        if (delta >= 1000) {
-            fpsTimes.shift()
-            FPS = fpsTimes.length
-        }
-    }
-    fpsTimes.push(currentTime);
-}
-
 var moverBarra1Arriba = false,
     moverBarra1Abajo = false,
     moverBarra2Arriba = false,
@@ -40,14 +27,14 @@ const SEGUNDO = 1000;
 
 var pixelSize = 1,
     distanciaBarras = 40,
-    velocidadBarras = 8;
+    velocidadBarras = 1.1 * canvasAlto / SEGUNDO;
 
 var largoBarrasDefault = canvasAlto / 5;
 var grosorBorde = 15;
 
 var puntajeBarra1 = 0,
     puntajeBarra2 = 0,
-    meta = 1;
+    meta = 5;
 
 var nombreJugador1 = "Jugador 1",
     nombreJugador2 = "Jugador 2";
@@ -95,8 +82,8 @@ var pelota = {
     x: canvasAncho / 2,
     y: canvasAlto / 2,
     color: "white",
-    radio: 15, //15
-    velocidad: canvasAncho * 0.4 / SEGUNDO,
+    radio: 20, //15
+    velocidad: canvasAncho * 0.5 / SEGUNDO,
     direccion: {
         x: DIR.RIGHT,
         y: DIR.UP
@@ -261,9 +248,9 @@ let lastTick = 0;
 
 function bucle(time) {
     empezoJuego = true;
-    calcFPS(time);
     const timeDelta = lastTick ? (time - lastTick) : 0;
     lastTick = time;
+
     pelota.x = pelota.x + (
         (pelota.direccion.x == DIR.LEFT) ? -1 : 1
     ) * pixelSize * pelota.velocidad * timeDelta
@@ -271,20 +258,20 @@ function bucle(time) {
     pelota.y = pelota.y + (
         (pelota.direccion.y == DIR.UP) ? -1 : 1
     ) * pixelSize * pelota.velocidad * timeDelta
-    actualizarPantalla();
+
 
     // ---------- Movimieto de la Barra 1 ----------
     if (moverBarra1Arriba) {
         if (barra1.y - barra1.largo / 2 - barra1.velocidad <= 0) {
             barra1.y = barra1.largo / 2;
         } else {
-            barra1.y -= barra1.velocidad;
+            barra1.y -= pixelSize * barra1.velocidad * timeDelta;
         }
     } else if (moverBarra1Abajo) {
         if (barra1.y + barra1.largo / 2 + barra1.velocidad >= canvasAlto) {
             barra1.y = canvasAlto - barra1.largo / 2;
         } else {
-            barra1.y += barra1.velocidad;
+            barra1.y += pixelSize * barra1.velocidad * timeDelta;
         }
     }
     // ---------- Movimieto de la Barra 2 ----------
@@ -292,13 +279,13 @@ function bucle(time) {
         if (barra2.y - barra2.largo / 2 - barra2.velocidad <= 0) {
             barra2.y = barra2.largo / 2;
         } else {
-            barra2.y -= barra2.velocidad;
+            barra2.y -= pixelSize * barra2.velocidad * timeDelta;
         }
     } else if (moverBarra2Abajo) {
         if (barra2.y + barra2.largo / 2 + barra2.velocidad >= canvasAlto) {
             barra2.y = canvasAlto - barra2.largo / 2;
         } else {
-            barra2.y += barra2.velocidad;
+            barra2.y += pixelSize * barra2.velocidad * timeDelta;
         }
     }
     // ----- Detecta la pelota en los bordes -----
@@ -355,6 +342,7 @@ function bucle(time) {
     } else if (puntajeBarra2 == meta) {
         detenerJuego(nombreJugador2);
     } else {
+        actualizarPantalla();
         update = window.requestAnimationFrame(bucle)
     }
 }
