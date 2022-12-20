@@ -11,5 +11,19 @@
     <body>
         <canvas id="mesa" draggable="false"></canvas>
         <script src="script.js"></script>
+
+        <button id="fullscreen" onclick="fullscreen()">⛶</button>
+        <script>
+            function fullscreen() {
+                var mesa = document.getElementById('mesa');
+
+                if (mesa.webkitRequestFullScreen) {
+                    mesa.webkitRequestFullScreen();
+                } else {
+                    mesa.mozRequestFullScreen();
+                }
+            }
+        </script>
+
     </body>
 </html>
