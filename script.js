@@ -95,7 +95,7 @@ var pelota = {
     y: canvasAlto / 2,
     color: "white",
     radio: 15, //15
-    velocidad: 700 / SEGUNDO,
+    velocidad: canvasAncho / SEGUNDO,
     direccion: {
         x: DIR.RIGHT,
         y: DIR.UP
@@ -121,7 +121,6 @@ if (window.innerWidth > 1200 && window.innerHeight > 500) {
     largoBarrasDefault = canvasAlto / 6;
 } else {
     puntaje.tamaño = "30px";
-    pelota.velocidad = 3;
     pelota.radio = pelota.radio / 2;
 
     canvasAncho = window.innerWidth - window.innerWidth / 14;
@@ -170,8 +169,9 @@ document.onkeyup = function (evento) {
     }
 };
 
-window.ontouchstart = (event) => {
-    for (let i = 0; i < 4; i++) {
+canvas.ontouchstart = (event) => {
+    for (let i = 0; i < event.touches.length; i++) {
+        console.log(event.touches)
         touchX[i] = event.touches[i].clientX;
         touchY[i] = event.touches[i].clientY;
 
@@ -197,7 +197,7 @@ window.ontouchstart = (event) => {
     }
 };
 
-window.ontouchend = (event) => {
+canvas.ontouchend = (event) => {
     for (let i = 0; i < 4; i++) {
         if (empezoJuego) {
             if (touchX[i] < canvasAncho / 2 && touchX[i] != 0) {
