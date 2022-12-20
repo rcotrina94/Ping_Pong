@@ -2,7 +2,7 @@
     font-family: 'ArcadeClassic';
     font-style: normal;
     font-weight: 400;
-    src: local('ArcadeClassic'), url('https://fonts.cdnfonts.com/s/6071/ARCADECLASSIC.woff') format('woff');
+    src: local('ArcadeClassic'), url('./fonts/ArcadeClassic.woff') format('woff');
 }
 
 body{
@@ -13,7 +13,6 @@ body{
     display: flex;
     place-content: center;
     align-items: center;
-    font-family: 'ArcadeClassic';
 }
 
 canvas#mesa{
