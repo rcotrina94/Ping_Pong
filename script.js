@@ -117,9 +117,6 @@ if (window.innerWidth > 1200 && window.innerHeight > 500) {
     ctx.canvas.width = canvasAncho;
     ctx.canvas.height = canvasAlto;
 
-    barra1.velocidad = velocidadBarras / 2;
-    barra2.velocidad = velocidadBarras / 2;
-
     barra1.ancho = barra1.ancho / 2;
     barra2.ancho = barra2.ancho / 2;
 }
