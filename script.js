@@ -43,10 +43,11 @@ var pixelSize = 1,
     velocidadBarras = 8;
 
 var largoBarrasDefault = canvasAlto / 5;
+var grosorBorde = 15;
 
 var puntajeBarra1 = 0,
     puntajeBarra2 = 0,
-    meta = 5;
+    meta = 1;
 
 var nombreJugador1 = "Jugador 1",
     nombreJugador2 = "Jugador 2";
@@ -95,7 +96,7 @@ var pelota = {
     y: canvasAlto / 2,
     color: "white",
     radio: 15, //15
-    velocidad: canvasAncho / SEGUNDO,
+    velocidad: canvasAncho * 0.4 / SEGUNDO,
     direccion: {
         x: DIR.RIGHT,
         y: DIR.UP
@@ -171,7 +172,6 @@ document.onkeyup = function (evento) {
 
 canvas.ontouchstart = (event) => {
     for (let i = 0; i < event.touches.length; i++) {
-        console.log(event.touches)
         touchX[i] = event.touches[i].clientX;
         touchY[i] = event.touches[i].clientY;
 
@@ -223,7 +223,7 @@ function inicio() {
     // Bordes
     ctx.beginPath();
     ctx.strokeStyle = "white";
-    ctx.lineWidth = 15;
+    ctx.lineWidth = grosorBorde;
     ctx.strokeRect(0, 0, canvasAncho, canvasAlto);
     ctx.stroke();
     ctx.closePath();
@@ -262,9 +262,8 @@ let lastTick = 0;
 function bucle(time) {
     empezoJuego = true;
     calcFPS(time);
-    const timeDelta = time - lastTick;
+    const timeDelta = lastTick ? (time - lastTick) : 0;
     lastTick = time;
-
     pelota.x = pelota.x + (
         (pelota.direccion.x == DIR.LEFT) ? -1 : 1
     ) * pixelSize * pelota.velocidad * timeDelta
@@ -272,7 +271,6 @@ function bucle(time) {
     pelota.y = pelota.y + (
         (pelota.direccion.y == DIR.UP) ? -1 : 1
     ) * pixelSize * pelota.velocidad * timeDelta
-
     actualizarPantalla();
 
     // ---------- Movimieto de la Barra 1 ----------
@@ -305,18 +303,19 @@ function bucle(time) {
     }
     // ----- Detecta la pelota en los bordes -----
     if ((pelota.y + pelota.radio / 2) >= canvasAlto) {
-        pelota.direccion.y = "arriba";
+        pelota.direccion.y = DIR.UP;
     }
 
     if ((pelota.y - pelota.radio / 2) <= 0) {
-        pelota.direccion.y = "abajo";
+        pelota.direccion.y = DIR.DOWN;
     }
-    // ---------- Detecta la pelota si rebota en la barra 1 ----------
-    if ((pelota.x + pelota.radio / 2 >= barra2.x - barra2.ancho && pelota.x + pelota.radio / 2 < barra2.x - barra2.ancho / 2)
-        && ((pelota.y - pelota.radio / 2 > barra2.y - barra2.largo / 2 && pelota.y - pelota.radio / 2 < barra2.y + barra2.largo / 2)
-            || (pelota.y + pelota.radio / 2 > barra2.y - barra2.largo / 2 && pelota.y - pelota.radio / 2 < barra2.y + barra2.largo / 2))) {
+    // ---------- Detecta la pelota si rebota en la barra 2 ----------
+    if (barra2.x > pelota.x
+        && barra2.x - barra2.ancho < pelota.x + pelota.radio / 2
+        && pelota.y > barra2.y - barra2.largo / 2 - pelota.radio / 2
+        && pelota.y < barra2.y + barra2.largo / 2 + pelota.radio / 2) {
 
-        pelota.direccion.x = "izquierda";
+        pelota.direccion.x = DIR.LEFT;
         // Cambia la direccion de Y de la pelota si rebota arriba o abajo de la barra 1
         // if(pelota.y < barra2.y){
         //     pelota.direccion.y = "arriba";
@@ -324,32 +323,31 @@ function bucle(time) {
         //     pelota.direccion.y = "abajo";
         // }
         // Si la elota toca los bordes laterales de la barra
-    } else if (pelota.x + pelota.radio / 2 >= canvasAncho) {
-        pelota.x = barra1.x + barra1.ancho + pelota.radio / 2;
-        pelota.y = barra1.y;
-        puntajeBarra1++;
-
-    } else if (pelota.x + pelota.radio / 2 >= canvasAncho) {
-        pelota.x = barra1.x + barra1.ancho + pelota.radio / 2;
-        pelota.y = barra1.y;
-        puntajeBarra1++;
     }
-    // ---------- Detecta la pelota si rebota en la barra 2 ----------
-    if ((pelota.x - pelota.radio / 2 <= barra1.x + barra1.ancho && pelota.x - pelota.radio / 2 > barra1.x + barra1.ancho / 2)
-        && ((pelota.y - pelota.radio / 2 > barra1.y - barra1.largo / 2 && pelota.y - pelota.radio / 2 < barra1.y + barra1.largo / 2)
-            || (pelota.y + pelota.radio / 2 > barra1.y - barra1.largo / 2 && pelota.y - pelota.radio / 2 < barra1.y + barra1.largo / 2))) {
+    // ---------- Detecta la pelota si rebota en la barra 1 ----------
+    if (barra1.x < pelota.x
+        && barra1.x + barra1.ancho > pelota.x - pelota.radio / 2
+        && pelota.y > barra1.y - barra1.largo / 2 - pelota.radio / 2
+        && pelota.y < barra1.y + barra1.largo / 2 + pelota.radio / 2) {
 
-        pelota.direccion.x = "derecha";
+        pelota.direccion.x = DIR.RIGHT;
         // Cambia la direccion de Y de la pelota si rebota arriba o abajo de la barra 1
         // if(pelota.y < barra1.y){
         //     pelota.direccion.y = "arriba";
         // } else {
         //     pelota.direccion.y = "abajo";
         // }
-    } else if (pelota.x - pelota.radio / 2 <= 0) {
+    }
+    if (pelota.x - pelota.radio / 2 <= grosorBorde / 2) {
         pelota.x = barra2.x - barra2.ancho - pelota.radio / 2;
         pelota.y = barra2.y;
         puntajeBarra2++;
+    }
+
+    if (pelota.x + pelota.radio / 2 >= canvasAncho - grosorBorde / 2) {
+        pelota.x = barra1.x + barra1.ancho + pelota.radio / 2;
+        pelota.y = barra1.y;
+        puntajeBarra1++;
     }
     // ---------- Verifica si terminó el juego ----------
     if (puntajeBarra1 == meta) {
